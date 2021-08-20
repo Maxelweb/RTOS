@@ -1,0 +1,6 @@
+version: '3.1'
+
+services:
+  gipp_code: 
+    container_name: gipp_code
+    build: .

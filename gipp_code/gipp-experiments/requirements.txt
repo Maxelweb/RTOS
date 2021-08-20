@@ -1,0 +1,5 @@
+sched-experiments
+schedcat
+numpy
+scipy
+matplotlib

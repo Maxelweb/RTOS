@@ -1,0 +1,11 @@
+\begin{figure}[H]
+%
+\begin{minipage}{0.48\columnwidth}%
+\centering%
+    \includegraphics[page=1,width=1.0\columnwidth]{INSERT_DIR_TO_BE_PLACED_IN_LATED_TEMPLATEexp-m04-U0160-n12-ls00-resnls12-resls03-accnls03-accls02-gsnls01-gtnls00-tp05-asym00.pdf}%
+%	\caption{Schedulability under the GIPP, OMIP, and CA-RNLP for the labelled parameters.}%
+\end{minipage}%
+%
+\hfill
+\end{figure}
+

@@ -1,0 +1,4 @@
+unionfind
+numpy
+matplotlib
+scipy
