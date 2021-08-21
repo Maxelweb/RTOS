@@ -1,6 +1,10 @@
 import os
 import numpy as np
 from scipy.interpolate import splrep, splev
+# ---- EXTRA FOR DOCKER ----
+import matplotlib
+matplotlib.use('Agg') # avoid using the backend instaed of Xwindows
+# ---- ----
 import matplotlib.pyplot as plt
 from toolbox.datafile import *
 
