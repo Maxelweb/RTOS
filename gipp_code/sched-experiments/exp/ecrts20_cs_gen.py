@@ -171,14 +171,17 @@ def assign_tasks_to_groups(num_tasks, min_tasks_per_group, num_groups):
         numer of groups to assign tasks to
     """
 
+    # [-1 -1 -1 -1 ... -1_numtasks]
     group_assignments = [-1 for _ in xrange(0, num_tasks)]
 
+    # Itero su tutti i gruppi
     for i in xrange(0, num_groups):
 
         group_task_count = 0
 
         while True:
-
+            
+            # se r = 3, allora [-1 -1 -1 i -1 ...]
             r = random.randint(0, num_tasks-1)
             if group_assignments[r] == -1:
                 group_assignments[r] = i
@@ -186,13 +189,19 @@ def assign_tasks_to_groups(num_tasks, min_tasks_per_group, num_groups):
 
             if group_task_count == min_tasks_per_group:
                 break
+    
+    # POST: ho un numero minimo di task assegnati a ciascun gruppo
+
 
     for i in xrange(0, num_tasks):
 
         if group_assignments[i] != -1:
             continue
 
+        # Se un task non è stato ancora assegnato (-1), assegno un gruppo randomico (r) 
         r = random.randint(0, num_groups-1)
         group_assignments[i] = r
 
+    # POST: tutti i task sono assegnati a un gruppo
+    
     return group_assignments
