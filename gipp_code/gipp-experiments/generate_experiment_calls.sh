@@ -1,8 +1,8 @@
 #!/bin/bash
 
 declare -a load=(0.4 0.6)
-declare -a num_nls_ratio=(2.0 3.0)
-declare -a num_ls_ratio=(0.0 0.5 1.0)
+declare -a num_nls_ratio=(2.0 3.0) # TODO: possible error? should be (n-n^nl)
+declare -a num_ls_ratio=(0.0 0.5 1.0) # multiplied for cpu_num (= n^nl)
 declare -a num_res_nls=(12)
 declare -a num_res_ls=(3)
 declare -a acc_max_nls=(1 2 3)

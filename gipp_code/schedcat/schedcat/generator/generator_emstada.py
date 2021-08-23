@@ -134,7 +134,7 @@ def gen_periods(n, nsets, min, max, gran, dist):
         periods = [random.choice(dist) for _ in xrange(n)]
         # wrap in numpy types
         periods = numpy.array(periods)
-        periods.shape = (1, n)
+        periods.shape = (1, n) # TODO: Genera un vettore (1 riga) con n elementi
     else:
         return None
     
@@ -151,6 +151,8 @@ def gen_periods(n, nsets, min, max, gran, dist):
 def gen_taskset(periods, period_distribution, tasks_n, utilization,
                 period_granularity=None, scale=ms2us, want_integral=True):
     
+    # TODO: qui prende sempre il primo IF nel nostro caso con emstada!!!
+
     if type(period_distribution) == list:
         period_min = period_distribution[0]
         period_max = period_distribution[-1]

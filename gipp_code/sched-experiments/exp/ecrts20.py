@@ -401,17 +401,19 @@ def generate_emstada_taskset(
         that determines how likely a "top-level" resource will be picked for the cs
     """
 
-    n = num_tasks - num_latency_sensitive
-    n_ls = num_latency_sensitive
+    n = num_tasks - num_latency_sensitive # Task regolari
+    n_ls = num_latency_sensitive # Task LS
     num_groups = num_res_nls // group_size_nls
 
     # num_res_nls is assumed to be a multiple of group_size_nls
     
-
+    # Controllo di sanità
     if num_groups > num_tasks:
         print "there must be at least as many tasks as there are groups"
         return [], []
 
+
+    # Prende l'ultimo gruppo che è pari al numero totale di gruppi con task non-ls
     selected_group_nls = None
     if group_size_nls == 1:
         selected_group_nls = group_1
@@ -448,9 +450,9 @@ def generate_emstada_taskset(
         print "not possible to assign %d tasks to %d groups with min_tasks_per_group=%d" % (n, num_groups, len(selected_group_nls["necessary"]))
         return [], []
 
-    # bound the total utilization of latench-sensitive tasks to not be more than half
+    # bound the total utilization of latency-sensitive tasks to not be more than half
     # of the total desired utilization
-    lsu = min(n_ls * 0.5, util * 0.5)
+    lsu = min(n_ls * 0.5, util * 0.5) # Dunque, il numero totale di task ls non devono essere superiori al doppio
 
     # generate tasks using with periods sampling from a log-uniform distribution
     # emstada.gen_taskset accets periods in milliseconds, but returns periods in
@@ -465,7 +467,11 @@ def generate_emstada_taskset(
     if n > 0:
         ts = emstada.gen_taskset(period_range_nls, period_range_nls, n, util - lsu, period_granularity=0.5, scale=ms2us)
     else:
-        ts = TaskSystem()
+        ts = TaskSystem() # TODO: ref. schedcat/schedcat/model/tasks.py
+
+    # TODO: reminder!
+    # (ts_ls, ts) = Task set con fine-grained nested locking
+    # (ts_ls_nn, ts_nn) = Task set senza nested-locking
 
     # tasksets for non-nested (denoted with _nn) resource model
     ts_ls_nn = ts_ls.copy()
