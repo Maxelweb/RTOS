@@ -110,6 +110,7 @@ def edf_test(num_cpus, cluster_size, apply_bounds, taskset):
             for t in part:
                 t.partition = cpu
 
+        # Functor! 
         _ = apply_bounds(num_cpus, cluster_size, working_taskset) # modifies task parameters
         
 
@@ -629,6 +630,7 @@ def emstada_example():
     ts, ts_nn = generate_emstada_taskset(2, 2, 0.8)
 
     # assign tasks to clusters (partition) using worst_fit_decreasing algorithm
+    # TODO: viene utilizzato schedcat/schedcat/mapping/*.py per la gestione dell'assegnazione dei task
     partitions = bp.worst_fit_decreasing(
                     ts, 
                     num_cpus,

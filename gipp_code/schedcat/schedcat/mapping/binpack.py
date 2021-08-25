@@ -44,6 +44,8 @@ and:
 
 """
 
+# Algoritmi ed euristiche per best-fit, next-fit, worst-fit
+
 id = lambda x: x
 
 class DidNotFit(Exception):
@@ -62,6 +64,7 @@ def report_failure(x):
 def value(sets, weight=id):
     return sum([sum([weight(x) for x in s]) for s in sets])
 
+# Place the next item in the list into the current bin if it fits; if it does not, close the current bin (though it may not be full) and start a new bin.
 def next_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
              empty_bin=list):
     sets = [empty_bin() for _ in xrange(0, bins)]
@@ -79,6 +82,7 @@ def next_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
         sum += c
     return sets
 
+# Place the next item in the list into the lowest numbered bin that it will fit into. If it will not fit into any bin, open a new one for it.
 def first_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
               empty_bin=list):
     sets = [empty_bin() for _ in xrange(0, bins)]
@@ -95,6 +99,7 @@ def first_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
 
     return sets
 
+# Place the next item in the list into that bin which will leave the largest amount of room left over after the item is placed in the bin. (Here is where being able to subtract comes in handy.)
 def worst_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
               empty_bin=list):
     sets = [empty_bin() for _ in xrange(0, bins)]
@@ -132,6 +137,7 @@ def almost_worst_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
             misfit(x)
     return sets
 
+# Place the next item in the list into that bin which will leave the least room left over after the the item is placed in the bin.
 def best_fit(items, bins, capacity=1.0, weight=id, misfit=ignore,
              empty_bin=list):
     sets = [empty_bin()  for _ in xrange(0, bins)]

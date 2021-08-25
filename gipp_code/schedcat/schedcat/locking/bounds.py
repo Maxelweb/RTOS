@@ -7,15 +7,19 @@ import schedcat.locking.native as cpp
 # each task a *preemption level*, with the following interpretation: a task A
 # can preempt a task B if and only if A.preemption_level < B.preemption_level.
 
+# for earliest deadline first
 def assign_edf_preemption_levels(all_tasks):
     all_deadlines = set([t.deadline for t in all_tasks])
     prio = {}
     for i, dl in enumerate(sorted(all_deadlines)):
         prio[int(dl)] = i
 
+    # Assegna l'indice delle deadline come preemption level
+
     for t in all_tasks:
         t.preemption_level = prio[int(t.deadline)]
 
+# ?
 def assign_prio_pt_preemption_levels(all_tasks):
     all_prio_pts = set([t.prio_pt for t in all_tasks])
     prio = {}
@@ -25,6 +29,7 @@ def assign_prio_pt_preemption_levels(all_tasks):
     for t in all_tasks:
         t.preemption_level = prio[int(t.prio_pt)]
 
+# for Fixed Priority
 def assign_fp_preemption_levels(all_tasks):
     # prioritized in index order
     for i, t in enumerate(all_tasks):

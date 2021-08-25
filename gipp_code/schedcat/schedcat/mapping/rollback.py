@@ -41,6 +41,9 @@ This was originally implemented for (and discussed in):
 
 """
 
+
+# Strutture dati per i bin
+
 from .binpack import ignore
 
 class BasicBin(object):
@@ -77,11 +80,11 @@ class BasicBin(object):
     def try_to_add(self, new_item):
         self.prepare()
         self.temporary_assign(new_item)
-        did_it_fit = self.validate()
+        did_it_fit = self.validate() 
         if did_it_fit:
-            self.commit()
+            self.commit() # a.k.a. return true
         else:
-            self.rollback()
+            self.rollback() # lo rimuove dalla lista
         return did_it_fit
 
     def try_to_add_no_commit(self, new_item):
