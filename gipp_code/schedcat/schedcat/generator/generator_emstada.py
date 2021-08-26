@@ -148,14 +148,15 @@ def gen_periods(n, nsets, min, max, gran, dist):
 #   period_distribution:    'unif' or 'logunif' for uniform or log-based distribution
 #   tasks_n:                number of tasks to be generated
 #   utilization:            target utilization of the task set to be generated
+# RTOS: summary: prende 
 def gen_taskset(periods, period_distribution, tasks_n, utilization,
                 period_granularity=None, scale=ms2us, want_integral=True):
     
-    # TODO: qui prende sempre il primo IF nel nostro caso con emstada!!!
+    # RTOS: qui prende sempre il primo IF nel nostro caso con emstada!!!
 
-    if type(period_distribution) == list:
-        period_min = period_distribution[0]
-        period_max = period_distribution[-1]
+    if type(period_distribution) == list: # RTOS: usa questo nel nostro caso (perché gli passiamo una lista come period_distribution)
+        period_min = period_distribution[0] # primo valore
+        period_max = period_distribution[-1] # ultimo valore
     elif periods in NAMED_PERIODS:
         # Look up by name.
         (period_min, period_max) = NAMED_PERIODS[periods]
@@ -171,20 +172,21 @@ def gen_taskset(periods, period_distribution, tasks_n, utilization,
 
     periods = numpy.maximum(periods[0], max(period_min, period_granularity))
 
-    C = scale(x[0] * periods)
+    C = scale(x[0] * periods) # esegue la funzione ms2us(time)
 
     taskset = numpy.c_[x[0], C / periods, periods, C]
     for t in range(numpy.size(taskset,0)):
-        ts.append(SporadicTask(taskset[t][3], scale(taskset[t][2])))
+        ts.append(SporadicTask(taskset[t][3], scale(taskset[t][2]))) # qui si crea un singolo task e lo mette in append al taskset
 
     if want_integral:
         quantize_params(ts)
     return ts
 
+# RTOS: Genera un set di task con assegnazione di periodi intervallati 
 def gen_tasksets(options):
     x = StaffordRandFixedSum(options.n, options.util, 1)
     periods = gen_periods(options.n, 1, options.permin, options.permax, options.pergran, options.perdist)
-    ts = TaskSystem()
+    ts = TaskSystem() # RTOS: è una lista che viene estesa con metodi aggiuntivi (ref. decorator pattern)
 
     C = x[0] * periods[0]
     if options.round_C:
@@ -194,7 +196,7 @@ def gen_tasksets(options):
 
     taskset = numpy.c_[x[0], C / periods[0], periods[0], C]
     for t in range(numpy.size(taskset,0)):
-        ts.append(SporadicTask(taskset[t][3], taskset[t][2]))
+        ts.append(SporadicTask(taskset[t][3], taskset[t][2])) # RTOS: Chiede WCET, Periodo e Deadline 
 
 #    print ts
     return ts

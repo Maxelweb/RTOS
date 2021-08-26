@@ -8,6 +8,8 @@ GROUP_TYPE_ALL = 0
 GROUP_TYPE_WIDE = 1
 GROUP_TYPE_DEEP = 2
 
+# RTOS: necessary --> relazione di dipendenza tra risorse (padre, figlio) (?)
+
 group_1 = dict()
 group_1["num_res"] = 1
 group_1["necessary"] = [(0,)]
@@ -18,7 +20,7 @@ group_2 = dict()
 group_2["num_res"] = 2
 group_2["necessary"] = [(0, 1)]
 group_2["top"] = [(0,)]
-group_2["all"] = [(1,)] + group_2["necessary"] + group_2["top"]
+group_2["all"] = [(1,)] + group_2["necessary"] + group_2["top"] #(1,),(0, 1),(0,)  0->1
 
 group_3_wide = dict()
 group_3_wide["num_res"] = 3
@@ -44,6 +46,7 @@ group_4_deep["necessary"] = [(0, 2), (1, 2), (2, 3)]
 group_4_deep["top"] = [(0,), (1,)]
 group_4_deep["all"] = [(2,), (3,)] + group_4_deep["necessary"] + group_4_deep["top"]
 
+# Non è possibile avere una CPU con un numero di core pari a 5, pertanto non possono esistere 5 istanze RNLP/Gruppi per 5 CPU
 group_5_wide_1 = dict()
 group_5_wide_1["num_res"] = 5
 group_5_wide_1["necessary"] = [(0, 4), (1, 4), (2, 4), (3, 4)]
@@ -71,7 +74,7 @@ def generate_group_cs_for_taskset(
 
     accesses = [[] for _ in xrange(0, num_tasks)]
 
-    necc = len(group_desc["necessary"])
+    necc = len(group_desc["necessary"]) # necessary critical sections
     necc_count = 0
     if num_tasks < necc:
         print "not possible to generate accesses with %d tasks for a group with %d necessary critical sections" % \
@@ -84,19 +87,19 @@ def generate_group_cs_for_taskset(
             necc_access = True
 
         # num_requests = random.randint(1, num_requests_max)
-        num_requests = num_requests_max[i]
+        num_requests = num_requests_max[i] # RTOS: access amounts è un vettore [randint(1, acc_max_ls)] ripetuto n_ls volte --> vedi ecrts20.py ~riga 500
 
         for _ in xrange(0, num_requests):
 
-            t_cs = None
-            if necc_access:
+            t_cs = None # tuple of critical section
+            if necc_access: # Se ho meno necessary rispetto al totale
                 t_cs = group_desc["necessary"][necc_count]
                 necc_count += 1
                 necc_access = False
             else:
 
-                pick_top = random.random() <= top_p
-                pick_set = group_desc["top"] if pick_top else group_desc["all"]
+                pick_top = random.random() <= top_p # RTOS: top probability da 0 a 1, se è minore stretto di 0.5
+                pick_set = group_desc["top"] if pick_top else group_desc["all"] # Esegue la top probability e prende uno tra i top, se soddisfatta oppure ne prende uno qualunque
                 r = random.randint(0, len(pick_set)-1)
                 t_cs = pick_set[r]
 

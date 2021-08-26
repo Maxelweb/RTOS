@@ -131,6 +131,13 @@ class ImpossibleConfiguration(Exception):
 
 def run_csl_config(conf):
 
+
+    # RTOS: importante --> crea una funzione lambda con un parametro in input
+    #                       e richiama generate_emstata_taskset
+
+    # def generate(csl_range):
+    #   return generate_ems(...)
+
     conf.generate = lambda csl_range: generate_emstada_taskset(
                         conf.num_tasks,
                         conf.num_tasks_ls,
@@ -414,10 +421,11 @@ def generate_emstada_taskset(
         return [], []
 
 
-    # Prende l'ultimo gruppo che è pari al numero totale di gruppi con task non-ls
+    # RTOS: Prende l'ultimo gruppo che è pari al numero totale di gruppi in cui splittare tutte le risorse non-ls (num_res_nls)
+    # numero di gruppo --> è anche il numero di risorse nel gruppo
     selected_group_nls = None
     if group_size_nls == 1:
-        selected_group_nls = group_1
+        selected_group_nls = group_1 
     
     if group_size_nls == 2:
         selected_group_nls = group_2
@@ -434,14 +442,15 @@ def generate_emstada_taskset(
         else:
             selected_group_nls = group_4_deep
 
+#Non può essere utilizzzato in un sistema |Cluster| = |Gruppi|
     if group_size_nls == 5:
         if group_type_nls == GROUP_WIDE:
-            if random.random() < 0.5 or True:
+            if random.random() < 0.5 or True: # RTOS: perché? 
                 selected_group_nls = group_5_wide_1
             else:
                 selected_group_nls = group_5_wide_2
         else:
-            selected_group_nls = group_5_deep
+            selected_group_nls = group_5_deep       # Controllare 
 
     if selected_group_nls == None:
         print "no group selected."
@@ -468,19 +477,19 @@ def generate_emstada_taskset(
     if n > 0:
         ts = emstada.gen_taskset(period_range_nls, period_range_nls, n, util - lsu, period_granularity=0.5, scale=ms2us)
     else:
-        ts = TaskSystem() # TODO: ref. schedcat/schedcat/model/tasks.py
+        ts = TaskSystem() # RTOS: ref. schedcat/schedcat/model/tasks.py
 
-    # TODO: reminder!
+    # RTOS: reminder!
     # (ts_ls, ts) = Task set con fine-grained nested locking
     # (ts_ls_nn, ts_nn) = Task set senza nested-locking
 
     # tasksets for non-nested (denoted with _nn) resource model
-    ts_ls_nn = ts_ls.copy()
+    ts_ls_nn = ts_ls.copy() # RTOS --> il metodo richiama una deepcopy nella classe TaskSystem
     ts_nn = ts.copy()
 
     # initialize nested resource models
-    initialize_nested_resource_model(ts_ls)
-    initialize_nested_resource_model(ts)
+    initialize_nested_resource_model(ts_ls) # RTOS: assegna un nuovo attributo con una lista con OutermostCriticalSections 
+    initialize_nested_resource_model(ts) # idem
 
     res_id_to_group = dict()
     group_counter = 0
@@ -497,12 +506,15 @@ def generate_emstada_taskset(
         else:
             selected_group_ls = group_3_wide
 
-        acc_amounts = [random.randint(1, acc_max_ls) for _ in xrange(0, n_ls)]
+        acc_amounts = [random.randint(1, acc_max_ls) for _ in xrange(0, n_ls)] # == num_requests
         acc_ls = generate_group_cs_for_taskset(
                                     n_ls,
                                     selected_group_ls,
                                     acc_amounts,
-                                    top_probability)
+                                    top_probability) # Genera le sezioni critiche dei gruppi per il taskset
+
+        
+        # RTOS: aggiunge le nested request e le outermost requests
 
         for i in xrange(0, len(ts_ls)):
             t = ts_ls[i]
@@ -512,11 +524,12 @@ def generate_emstada_taskset(
                 # Currently the GIPP only reasons about the length of outermost
                 # critical sections, so having nested critical sections with
                 # the same length suffices.
+                # RTOS: --> a.k.a. inutile fare una differenziazione di questo tipo
                 x = [random.randint(csl_range_ls[0], csl_range_ls[1])]
-                lengths = x * len(a)
+                lengths = x * len(a) # lunghezza_sez_critica * csl_range_ls_random
                 # lengths = random_less_len(len(a), csl_range_ls)
 
-                cs = t.critical_sections.add_outermost(a[0], lengths[0])
+                cs = t.critical_sections.add_outermost(a[0], lengths[0]) # RTOS: crea l'oggetto CriticalSection dentro OutermostCriticalSection e fa cose
                 res_id_to_group[a[0]] = group_counter
 
                 for k in xrange(1, len(a)):
@@ -526,6 +539,8 @@ def generate_emstada_taskset(
         
         # any further resources belong to another group
         group_counter += 1
+
+    # RTOS-HERE (26/08/2021)
     else:
         # if no latency-sensitive tasks, then we set this to zero so the
         # offsets calculated for the non-latency-sensitive tasks are not

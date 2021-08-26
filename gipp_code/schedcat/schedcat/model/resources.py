@@ -140,10 +140,10 @@ class OutermostCriticalSections(list):
             cs.flat_index = i
             yield (cs.res_id, cs.length, cs.outer.flat_index if cs.outer else -1, cs.outer.res_id if cs.outer else -1)
 
-
+# RTOS: richiamato da ecrts20.py:generator_emstada_taskset.py
 def initialize_nested_resource_model(taskset):
     for t in taskset:
-        t.critical_sections = OutermostCriticalSections()
+        t.critical_sections = OutermostCriticalSections() # RTOS: associa una lista decorata (= OutermostCriticalSections) con un nuovo attributo per la classe TaskSystem
 
 def identify_group_locks(taskset):
     groups = {}

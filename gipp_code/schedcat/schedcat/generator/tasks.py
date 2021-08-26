@@ -113,13 +113,13 @@ class TaskGenerator(object):
                (max_util is None  or usum  < max_util)):
             period   = self.period()
             util     = self.util()
-            cost     = period * util
+            cost     = period * util # RTOS: WCET generico 
             deadline = self.deadline(cost, period)
             # scale as required
             period   = max(1,    int(time_conversion(period)))
             cost     = max(1,    int(time_conversion(cost)))
             deadline = max(1, int(time_conversion(deadline)))
-            util = cost / period
+            util = cost / period # RTOS: Utilizzazione convertito in time
             count  += 1
             usum   += util
             if max_util and usum > max_util:

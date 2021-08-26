@@ -9,6 +9,8 @@ RESULTS_DATA_WORKING_DIR = "./data_working/"
 RESULTS_DATA_COMPLETE_DIR = "./data_complete/"
 RESULTS_DATA_IMPOSSIBLE_DIR = "./data_impossible/"
 
+# ecrts20 --> sched-experiments/exp/ecrts20.py
+
 def run(
     num_cpus,   
     load,
@@ -67,6 +69,8 @@ def run(
 def run_experiment(conf):
     
     print conf.output_file
+
+    # Controlli di sanità dei file (se presenti o meno)
 
     if os.path.exists(RESULTS_DATA_COMPLETE_DIR + conf.output_file):
         print "configuration already complete. skipping."
