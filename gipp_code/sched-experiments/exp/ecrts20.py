@@ -162,6 +162,8 @@ def run_csl_config(conf):
     if test_taskset == ([], []):
         return False
 
+    # RTOS: RIPRENDERE DA QUI (finito gen_emstada_ts) (27/08/2021)
+
     tests = [
         partial(edf_test_gipp_wrapper, conf.num_cpus, conf.cluster_size),
     ]
@@ -504,7 +506,7 @@ def generate_emstada_taskset(
             selected_group_ls = group_1
             num_res_ls = 1
         else:
-            selected_group_ls = group_3_wide
+            selected_group_ls = group_3_wide # RTOS: default num_res_ls=3 !! 
 
         acc_amounts = [random.randint(1, acc_max_ls) for _ in xrange(0, n_ls)] # == num_requests
         acc_ls = generate_group_cs_for_taskset(
@@ -524,7 +526,7 @@ def generate_emstada_taskset(
                 # Currently the GIPP only reasons about the length of outermost
                 # critical sections, so having nested critical sections with
                 # the same length suffices.
-                # RTOS: --> a.k.a. inutile fare una differenziazione di questo tipo
+                # RTOS: --> ~ inutile fare una differenziazione di questo tipo
                 x = [random.randint(csl_range_ls[0], csl_range_ls[1])]
                 lengths = x * len(a) # lunghezza_sez_critica * csl_range_ls_random
                 # lengths = random_less_len(len(a), csl_range_ls)
@@ -544,20 +546,24 @@ def generate_emstada_taskset(
     else:
         # if no latency-sensitive tasks, then we set this to zero so the
         # offsets calculated for the non-latency-sensitive tasks are not
-        # increased to compensate for resource_ids that don't existv
+        # increased to compensate for resource_ids that don't exists
         num_res_ls = 0
 
     # generate a list of the groups that tasks accessses
     group_accesses = assign_tasks_to_groups(n, len(selected_group_nls["necessary"]), num_groups)
 
     for h in xrange(0, num_groups):  
+        # h = gruppo in esame
 
         num_tasks_accessing_group = 0
-        for nt in group_accesses:
+        for nt in group_accesses: # [gruppo_assegnato_task1, gruppo_ass_task2, ecc.]
             if nt == h:
                 num_tasks_accessing_group += 1
 
+        # POST: ho il numero di task assegnati al gruppo h
+
         acc_amounts = [random.randint(1, acc_max_nls) for _ in xrange(0, num_tasks_accessing_group)]
+        # [rand(1,acc_max_nls)_1, rand(1,acc_max_nls)_2, rand(1,acc_max_nls)_3, ecc.] con size = num task per quel gruppo
 
         generate_cs_func = None
         if asymmetric:
@@ -571,19 +577,30 @@ def generate_emstada_taskset(
                                 acc_amounts,
                                 top_probability)
 
-        offset = num_res_ls + (h * selected_group_nls["num_res"])
+        # POST: acc contiene l'array di accessi nelle sezioni critiche per il gruppo h
+        
+        #RTOS: Numero di risorse ls + Numero del gruppo(Ordinamento) moltiplicato il numero delle risorse nls presenti nel gruppo
+        # [4, 5, 3, 1, 2, 6, 7, 8, 1, 2, 6, 7, 8, 1, 2, 6, 7, 8(Group_last_res), 1, 2, 6, 7, 8, 1, 2, 6, 7, 8]
+        offset = num_res_ls + (h * selected_group_nls["num_res"]) # offset per iterare in un vettore formato da tutte le risorse
 
         for j in xrange(0, len(acc)):
             for k in xrange(0, len(acc[j])):
                 for l in xrange(0, len(acc[j][k])):
                     acc[j][k][l] += offset
+                    # [[(x,y)], [...], ...] --> [[(x+offset, y+offset)], ...] (con y == null || y > 0)
+
+        # accesses[i].append(list(t_cs)) # --> from ecrts20_cs_gen
+        # [j][k][l] --> j = num_task; k = lista (con solo un elemento?); l = tupla
+
 
         t_acc_counter = 0
         for i in xrange(0, len(ts)):
 
             # if the task doesn't access the group, then move onto the next task
-            if group_accesses[i] != h:
+            if group_accesses[i] != h: # h = group sotto esame
                 continue
+
+            # RTOS: aggiunge le outermost and le nested requests
 
             t = ts[i]
             t_acc = acc[t_acc_counter]
@@ -616,8 +633,8 @@ def generate_emstada_taskset(
     initialize_resource_model(ts_ls_nn)
     initialize_resource_model(ts_nn)
 
-    ts.extend(ts_ls)
-    ts_nn.extend(ts_ls_nn)
+    ts.extend(ts_ls) #Task System generico con le richieste annidate
+    ts_nn.extend(ts_ls_nn) #Task System generico senza le richieste annidate
 
     for i in xrange(0, len(ts)):
 
@@ -629,7 +646,9 @@ def generate_emstada_taskset(
             # only interested in outermost critical sections
             if cs.outer == None:
                 group_id = res_id_to_group[cs.res_id]
-                t_nn.resmodel[group_id].add_request(cs.length)
+                t_nn.resmodel[group_id].add_request(cs.length) # RTOS: in add_request la priorità non viene settata (default = 0)
+
+                # RTOS: WARNING!! cos'è resmodel?? è un ResourceRequirement la cui definizione non si trova (per ora)
 
 
     return (ts, ts_nn)

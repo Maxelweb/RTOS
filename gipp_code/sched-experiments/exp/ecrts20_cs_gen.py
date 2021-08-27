@@ -98,21 +98,39 @@ def generate_group_cs_for_taskset(
                 necc_access = False
             else:
 
+                # Se probabilità soddisfatta prendo TOP
+                # altrimenti prendo ALL (quindi anche possibili TOP)
+
                 pick_top = random.random() <= top_p # RTOS: top probability da 0 a 1, se è minore stretto di 0.5
                 pick_set = group_desc["top"] if pick_top else group_desc["all"] # Esegue la top probability e prende uno tra i top, se soddisfatta oppure ne prende uno qualunque
+                # RTOS: WARNING!! POSSIBILE ERRORE: perché prende all e non soltanto necessary? ref. master thesis
                 r = random.randint(0, len(pick_set)-1)
                 t_cs = pick_set[r]
 
-            accesses[i].append(list(t_cs))
+            accesses[i].append(list(t_cs)) # [j][k][l] --> j = num_task; k = lista (con solo un elemento?); l = tupla 
+
+            # acc = list(list(tuple), list(...), ...)
 
     return accesses
 
 
+
+# RTOS: Dalla definizione 6.0.1 si denota la presenza di un request symmetry ratio, cioè una misura di quanto simili sono le resource access patterns di due task. 
+#       1) Viene innanzitutto individuato un valore di simmetria basato su due task, definito come il rapporto tra: 
+#           - La sommatoria del numero di accessi effettuati da entrambi i task sulle risorse che si contendono (a cui accedono entrambi);
+#           - Il numero di accessi totali che i due task effettuano
+#       2) Individuato il valore si dice che i due task hanno:
+#           - Alti pattern di accesso assimetrico (HAAPs) se symr(T_i, T_k) < x (un certo valore definito a priori);
+#           - Altrimenti si dice che hanno pattern di accessi uniformi (UAPs) symr(T_i, T_k) >= x
+#       3) Prendendo in esame due task T_i e T_k, individuando delle relazioni tra risorse l1 > l3, l2 > l3 e analizzando N_i,1 N_k,2 (Numero di richieste del task per una particolare risorsa) vogliamo:
+#           - Un elevato valore per entrambi gli N in modo da ridurre il valore di simmetria fino ad un paramentro definito in fase di progettazione (x);
+#           - In una situazione di HAAPs ci si aspetta che un fine-grained locking protocol dia un pi-blocking bound inferiore rispetto a un protocollo che realizza nested locking con group locks.
+#           - Sotto GIPP l'unica richiesta che potrebbe bloccare J_k è quella per l2 effettuata da J_i. Il motivo è che, indipendentemente dal numero di replicas, solo il token top della coda di accesso può accedervi, accodando ogni altra eventuale richiesta.
 def generate_asymmetric_group_cs_for_taskset(
     num_tasks,
     group_desc,
     num_requests_max,
-    top_p = 0.9
+    top_p = 0.9 # --> x (è la threshold?)
 ):
 
     accesses = [[] for _ in xrange(0, num_tasks)]
@@ -130,7 +148,7 @@ def generate_asymmetric_group_cs_for_taskset(
             necc_access = True
 
         # num_requests = random.randint(1, num_requests_max)
-        num_requests = num_requests_max[i]
+        num_requests = num_requests_max[i] # --> numero massimo di richieste (generato randomicamente vedi ecrts20 vettore con valori rand)
 
         for _ in xrange(0, num_requests):
 
@@ -143,12 +161,15 @@ def generate_asymmetric_group_cs_for_taskset(
 
                 pick_top = random.random() <= top_p
 
-                if (pick_top):
+                # prende solo elementi TOP
+                if (pick_top): 
                     num_top = len(group_desc["top"])
-                    pick_index = i % num_top
+                    pick_index = i % num_top # i-esimo task. Divide il numero del task per il numero di risorse top del gruppo e ne estrae il modulo
                     t_cs = group_desc["top"][pick_index]
-                else:
-                    pick_set = [x for x in group_desc["all"] if (x not in group_desc["top"])]
+
+                # prende solo elementi NON TOP
+                else: 
+                    pick_set = [x for x in group_desc["all"] if (x not in group_desc["top"])] # set with [necessary + non_top_res]
                     r = random.randint(0, len(pick_set)-1)
                     t_cs = pick_set[r]
 
