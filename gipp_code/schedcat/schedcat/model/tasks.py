@@ -38,7 +38,7 @@ class SporadicTask(object):
         return self.cost / min(self.period, self.deadline)
 
     def density_q(self):
-        return Fraction(self.cost, min(self.period, self.deadline))
+        return Fraction(self.cost, min(self.period, self.deadline)) # RTOS: exe_cost/min(period,deadline)
 
     def tardiness(self):
         """Return this task's tardiness.

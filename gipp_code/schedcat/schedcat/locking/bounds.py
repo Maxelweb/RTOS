@@ -14,7 +14,7 @@ def assign_edf_preemption_levels(all_tasks):
     for i, dl in enumerate(sorted(all_deadlines)):
         prio[int(dl)] = i
 
-    # Assegna l'indice delle deadline come preemption level
+    # RTOS: Assegna l'indice delle deadline come preemption level
 
     for t in all_tasks:
         t.preemption_level = prio[int(t.deadline)]

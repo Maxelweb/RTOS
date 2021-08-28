@@ -52,8 +52,8 @@ def edf_test_gipp_wrapper(num_cpus, cluster_size, tasksets):
         number of cpus in the system
     cluster_size - int:
         number of cpus per cluster
-    tasksets[0] - SporadicTask set (i.e. list) of tasks with nested resource model
-    tasksets[1] - SporadicTAsk set of tasks with non-nested resource model
+    tasksets[0] - SporadicTask set (i.e. list) of tasks with nested resource model --> RTOS: ts
+    tasksets[1] - SporadicTAsk set of tasks with non-nested resource model --> RTOS: ts_nn
 
     taskset[1] should be identical to taskset[0] except that the former uses a single group
     lock for each group as defined by the GIPP
@@ -91,8 +91,8 @@ def edf_test(num_cpus, cluster_size, apply_bounds, taskset):
         the taskset to perform the EDF test on
     """
 
-    num_clusters = num_cpus // cluster_size
-    working_taskset = taskset.copy()
+    num_clusters = num_cpus // cluster_size # RTOS: in un sistema globale, cluster_size = 1 
+    working_taskset = taskset.copy() # RTOS: copia profonda ridefinita!
 
     locking.assign_edf_preemption_levels(working_taskset)
     for t in working_taskset:
@@ -106,11 +106,13 @@ def edf_test(num_cpus, cluster_size, apply_bounds, taskset):
                         misfit=bp.report_failure,
                         empty_bin=TaskSystem)
 
-        for cpu, part in enumerate(partitions):
+        # RTOS: POST - Otteniamo delle partizioni di taskset assegnati ai cluster (ossia alle singole cpu se cluster_size=1)                         
+
+        for cpu, part in enumerate(partitions):  # Numero di partizioni identico al numero di CPU in un sistema global 
             for t in part:
                 t.partition = cpu
 
-        # Functor! 
+        # Alias di una funzione passato come argomento della funzione edf_test 
         _ = apply_bounds(num_cpus, cluster_size, working_taskset) # modifies task parameters
         
 
@@ -151,14 +153,14 @@ def run_csl_config(conf):
                         acc_max_ls=conf.acc_max_ls,
                         acc_max_nls=conf.acc_max_nls,
                         csl_range_ls=conf.csl_range_ls,
-                        csl_range_nls=csl_range,
+                        csl_range_nls=csl_range,                # (conf.csl_range_nls[0], conf.csl_range_nls[0]+5)
                         top_probability=conf.top_probability,
                         asymmetric=conf.asymmetric
                         )
 
     # check to see if its possible to generate a taskset with such a configuraiton
     # return False if so to denote that its impossible.
-    test_taskset = conf.generate((conf.csl_range_nls[0], conf.csl_range_nls[0]+5))
+    test_taskset = conf.generate((conf.csl_range_nls[0], conf.csl_range_nls[0]+5)) # RTOS: output (ts, ts_nn)
     if test_taskset == ([], []):
         return False
 
@@ -444,7 +446,7 @@ def generate_emstada_taskset(
         else:
             selected_group_nls = group_4_deep
 
-#Non può essere utilizzzato in un sistema |Cluster| = |Gruppi|
+    #Non può essere utilizzzato in un sistema |Cluster| = |Gruppi|
     if group_size_nls == 5:
         if group_type_nls == GROUP_WIDE:
             if random.random() < 0.5 or True: # RTOS: perché? 
