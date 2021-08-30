@@ -12,7 +12,7 @@ def assign_edf_preemption_levels(all_tasks):
     all_deadlines = set([t.deadline for t in all_tasks])
     prio = {}
     for i, dl in enumerate(sorted(all_deadlines)):
-        prio[int(dl)] = i
+        prio[int(dl)] = i                       #Si basa sul concetto di priorità secondo la condizione: A.preemption_level < B.preemption_level.
 
     # RTOS: Assegna l'indice delle deadline come preemption level
 
@@ -455,13 +455,13 @@ def apply_pfp_nested_fifo_spinlock_bounds(all_tasks, rnlp=False,
     return res
 
 def apply_gipp_bounds(all_tasks, num_cpus, procs_per_cluster, force_single_group=False):
-    task_info = get_cpp_model(all_tasks, no_requests=True)
+    task_info = get_cpp_model(all_tasks, no_requests=True) # Istanzia il modello CPP ResourceSharingInfo
     nested_model = get_cpp_nested_cs_model(all_tasks)
     res = lp_cpp.lp_gipp_bounds(task_info, 
                                 nested_model,
                                 num_cpus, 
                                 procs_per_cluster,
-                                force_single_group)
+                                force_single_group) # RTOS questo valore è a TRUE (vedi edf_test_gipp_wrapper in ecrts20)
     apply_suspension_oblivious(all_tasks, res)
     return res
 

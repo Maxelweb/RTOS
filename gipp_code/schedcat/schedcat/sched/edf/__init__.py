@@ -44,6 +44,8 @@ def should_use_baruah_test(threshold, taskset, no_cpus):
         score = n * (no_cpus * no_cpus) / (slack * slack)
         return score <= threshold
 
+# RTOS: supponiamo la versione C++ ~= Py
+
 # all (pure Python implementation)
 def is_schedulable_py(no_cpus, tasks,
                       rta_min_step=1,
@@ -56,8 +58,8 @@ def is_schedulable_py(no_cpus, tasks,
         # trivially infeasible
         return False
     else:
-        not_arbitrary = tasks.only_constrained_deadlines()
-        if no_cpus == 1 and tasks.density() <= 1:
+        not_arbitrary = tasks.only_constrained_deadlines() # Controlla se tutti i task possiedono una constrained deadline  t.deadline <= t.period
+        if no_cpus == 1 and tasks.density() <= 1: # density: sum_tasks(t.cost / min(period,deadline))
             # simply uniprocessor density condition
             return True
         elif no_cpus > 1:

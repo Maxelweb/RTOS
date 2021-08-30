@@ -248,7 +248,7 @@ unsigned long GIPPLinearProgram::solve()
 	result = ceil(sol->evaluate(*get_objective()));
 
 	if (GIPP_LP_OUTPUT) {
-		std::cout << "Solution: " << result << std::endl;
+		std::cout << "Solution: " << result << std::endl; // 42
 	}
 
 	// for (unsigned int x = 0; x < vars.get_num_vars(); x++)
@@ -350,7 +350,9 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 
 	/* for all groups */
 	unsigned int group_id;
-	enumerate(resource_groups, group, group_id)
+	enumerate(resource_groups, group, group_id) // RTOS: group = current obj, group_id = current id starting from 0
+	// RTOS - ENUMERATE: 
+	// for (typeof(resource_groups.begin()) group = ({group_id = 0; (resource_groups).begin();}); group != (resource_groups).end(); group++, group_id++)
 	{
 
 		/* for all clusters */
@@ -360,17 +362,20 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 
 			/* sum over tasks in each cluster */
 			unsigned int x;
-			enumerate(taskset, task, x) {
-
+			enumerate(taskset, task, x) {  
 				/* ignore task being analyzed, or tasks not in the current cluster */
 				if(task->get_cluster() != k || x == (unsigned int)i) {
+					// RTOS: In case its unclear, i is the index of the tasking being examined, and
+					// task_id is the task being compared against (e.g. Ti vs Tx)
 					continue;
 				}
 
 				const CriticalSections& tx_cs = taskset_cs[x].get_cs();
 
-				unsigned int y = 0;
+				unsigned int y = 0; // Numero di tutte le outermost critical sections di Tx
 				unsigned int cs_index;
+
+				// RTOS: cicla su ciascuna sezione critica del task Tx
 				enumerate(tx_cs, cs, cs_index) {
 
 					/* we continue without incrementing y as we only consider outermost
@@ -382,7 +387,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 					/* the resource_id associated with the outermost request is not part of
 					the group. however, we increment y as y is used to denote the task's
 					y-th outermost critical section. */
-					if (!group->count(cs->resource_id)) {
+					if (!group->count(cs->resource_id)) { // Se la risorsa non fa parte del gruppo di risorse 
 						y++;
 						continue;
 					} 
@@ -390,7 +395,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 					unsigned int overlapping_jobs = num_jobs_to_consider(*task);
 					for (unsigned int v = 0; v < overlapping_jobs; v++) {
 
-						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN);
+						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera un token SIAMO QUI (30/08/2021)
 						exp->add_var(var_token);
 					
 					}
@@ -1458,7 +1463,9 @@ void generate_resource_group_mapping(
 	resource_group_mapping = std::vector<unsigned int>(num_resources, 0);
 
 	unsigned int group_id = 0;
-	enumerate(resource_groups, group, group_id) {
+	enumerate(resource_groups, group, group_id) { // group_id = index dell'iteratore, group = oggetto group
+	
+	// for (typeof(resource_groups.begin()) group = ({group_id = 0; (resource_groups).begin();}); group != (resource_groups).end(); group++, group_id++)
 
 		for (auto resource = group->begin(); resource != group->end(); ++resource) {
 			
@@ -1592,7 +1599,7 @@ BlockingBounds* lp_gipp_bounds(
 	}
 	
 	ResourceGroups resource_groups;
-	if (force_single_group) {
+	if (force_single_group) { // RTOS: valore impostato a TRUE dalla chiamata
 		generate_single_resource_group(info.get_tasks(), tsk_cs.get_tasks(), resource_groups);
 	} else {
 		generate_resource_groups(info.get_tasks(), tsk_cs.get_tasks(), resource_groups);
@@ -1603,7 +1610,7 @@ BlockingBounds* lp_gipp_bounds(
 	}
 
 	std::vector<unsigned int> resource_group_mapping;
-	generate_resource_group_mapping(resource_groups, resource_group_mapping);
+	generate_resource_group_mapping(resource_groups, resource_group_mapping); // RTOS: genera una mappa con resource_group_mapping
 
 	if (G_ENABLE_DEBUG) {
 		std::cout << "Generating Constants --------" << std::endl << std::flush;
@@ -1620,13 +1627,13 @@ BlockingBounds* lp_gipp_bounds(
 	std::vector<std::set<unsigned int>> resource_greater_than;
 	generate_resource_greater_than(num_resources, tsk_cs.get_tasks(), resource_greater_than);
 
-	uint2D task_outermost_accesses;
+	uint2D task_outermost_accesses; // vector<std::vector<unsigned int>>
 
 	uint2D task_phis;
 	uint2D cluster_betas;
 	std::vector<unsigned int> system_betas;
 	uint2D task_outermost_cs_max_lengths;
-	generate_constants(
+	generate_constants(				// Restituisce l'oggetto relativo per riferimento
 		info.get_tasks(),
 		tsk_cs.get_tasks(),
 		resource_group_mapping,

@@ -64,7 +64,7 @@ def edf_test_gipp_wrapper(num_cpus, cluster_size, tasksets):
 
     gipp_result = edf_test(num_cpus, cluster_size, gipp_bounds, tasksets[0])
     omip_result = edf_test(num_cpus, cluster_size, omip_bounds, tasksets[1])
-    rnlp_result = edf_test(num_cpus, cluster_size, rnlp_bounds, ts_rnlp)
+    rnlp_result = edf_test(num_cpus, cluster_size, rnlp_bounds, ts_rnlp) # RTOS: stiamo valutando l'edf test
 
     # r = 0 indicates neither test succeeded
     r = '%d-%d-%d' % \
@@ -99,7 +99,7 @@ def edf_test(num_cpus, cluster_size, apply_bounds, taskset):
         t.response_time = t.deadline
 
     try:
-        partitions = bp.worst_fit_decreasing(
+        partitions = bp.worst_fit_decreasing(     # Generazione dei bin 
                         working_taskset, num_clusters,
                         capacity=cluster_size,
                         weight=lambda t: t.utilization(),
@@ -167,11 +167,11 @@ def run_csl_config(conf):
     # RTOS: RIPRENDERE DA QUI (finito gen_emstada_ts) (27/08/2021)
 
     tests = [
-        partial(edf_test_gipp_wrapper, conf.num_cpus, conf.cluster_size),
+        partial(edf_test_gipp_wrapper, conf.num_cpus, conf.cluster_size), # RTOS: STIAMO VALUTANDO edf_test_gipp_wrapper (30/08/2021)
     ]
     titles = ['GIPP-vs-OMIP-vs-RNLP/EDF']
 
-    data = run_cls_tests(conf, tests)
+    data = run_cls_tests(conf, tests) 
     write_data(conf.output, data, titles)
 
     return True
