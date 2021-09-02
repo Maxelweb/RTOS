@@ -157,7 +157,8 @@ class GIPPLinearProgram : protected LinearProgram
 	unsigned int num_jobs_to_consider(const TaskInfo& tx)
 	{
 		// standard formula
-		return tx.get_max_num_jobs(ti.get_response());
+		// RTOS: calcolo del bound
+		return tx.get_max_num_jobs(ti.get_response()); //Bound on the maximum number of Jobs of Tx
 	}
 
 
@@ -267,6 +268,8 @@ unsigned long GIPPLinearProgram::solve()
 
 typedef const unsigned int var_t;
 
+
+// RTOS: ref. formula 5.2 msc james robb
 void GIPPLinearProgram::set_objective()
 {
 	/*
@@ -311,9 +314,10 @@ void GIPPLinearProgram::set_objective()
 
 				var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN);
 				var_t var_rsm = vars.lookup(x, y, v, BLOCKING_RSM);
-
-				obj->add_term(cs->length, var_token);
-				obj->add_term(cs->length, var_rsm);
+				
+				// cs-length => L{^O}{_x,y}
+				obj->add_term(cs->length, var_token); // X^T
+				obj->add_term(cs->length, var_rsm); // X^R
 
 			
 				/*
@@ -392,11 +396,11 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 						continue;
 					} 
 
-					unsigned int overlapping_jobs = num_jobs_to_consider(*task);
-					for (unsigned int v = 0; v < overlapping_jobs; v++) {
+					unsigned int overlapping_jobs = num_jobs_to_consider(*task); // = 0{_x}{^i}
+					for (unsigned int v = 0; v < overlapping_jobs; v++) { // v = {1,...,0{_x}{^i}}
 
-						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera un token SIAMO QUI (30/08/2021)
-						exp->add_var(var_token);
+						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera una codifica del token blocking 
+						exp->add_var(var_token); // Aggiunge var_token (codificato) come espressione lineare per il problema da risolvere
 					
 					}
 

@@ -58,10 +58,11 @@ std::ostream& operator<<(std::ostream &os, const ResourceSharingInfo &rsi)
 	return os;
 }
 
+// RTOS: calcolo del bound !!
 unsigned int TaskInfo::get_max_num_jobs(unsigned long interval) const
 {
 	unsigned long num_jobs;
-	num_jobs = divide_with_ceil(interval + get_response(), get_period());
+	num_jobs = divide_with_ceil(interval + get_response(), get_period()); //Intervallo = R_i; get_response() = Response time del task esaminato; get_period() = Periodo del task esaminato
 	return num_jobs;
 }
 
