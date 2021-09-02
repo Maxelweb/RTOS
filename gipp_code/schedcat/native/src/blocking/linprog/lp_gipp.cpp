@@ -32,6 +32,17 @@
 #define BLOCKING_RSM   BLOCKING_DIRECT
 #define BLOCKING_TOKEN BLOCKING_INDIRECT
 
+
+/*
+
+	RTOS WARNING: analizzando la AI sappiamo che viene eseguito un priority boosting a seguito della migrazione di un Job in un altro cluster.
+	Confrontando l'analisi fine-grained pi-blocking con il paper di Brandeburg ci siamo accorti che quanto riportato sopra (ossia l'associazione del blocking RSM e token) 
+	potrebbe non essere del tutto accurata dal momento che manca un blocking: il preemption-delay!
+
+	--> Non c'è preemption: guardando il funzionamento di AI e del CKIP non c'è preemption perché al momento della richiesta i job vengono accodati e immediatamente sospesi; ritornano ready solo quando saranno in testa alla coda, dunque non dovrebbe sussistere predizione.
+
+*/
+
 /* 
 despite introducing new typedefs for for resourceIDs, groupIDs, etc.
 the code currently *ABSOLUTELY REQUIRES* that all indicies used are
