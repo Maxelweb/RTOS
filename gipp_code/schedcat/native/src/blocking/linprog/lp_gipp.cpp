@@ -280,6 +280,7 @@ unsigned long GIPPLinearProgram::solve()
 typedef const unsigned int var_t;
 
 
+// RTOS: (I) CONSTRAINT
 // RTOS: ref. formula 5.2 msc james robb
 void GIPPLinearProgram::set_objective()
 {
@@ -351,6 +352,8 @@ void GIPPLinearProgram::set_objective()
 
 }
 
+
+// RTOS: (III) CONSTRAINT
 void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 {
 	/*
@@ -371,7 +374,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 	{
 
 		/* for all clusters */
-		for(unsigned int k = 0; k < num_procs / cluster_size; k++) {
+		for(unsigned int k = 0; k < num_procs / cluster_size; k++) { 
 
 			LinearExpression *exp = new LinearExpression();
 
@@ -391,7 +394,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 				unsigned int cs_index;
 
 				// RTOS: cicla su ciascuna sezione critica del task Tx
-				enumerate(tx_cs, cs, cs_index) {
+				enumerate(tx_cs, cs, cs_index) { // RTOS: Prima sommatoria del constraint 25
 
 					/* we continue without incrementing y as we only consider outermost
 					critical sections */
@@ -408,9 +411,9 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 					} 
 
 					unsigned int overlapping_jobs = num_jobs_to_consider(*task); // = 0{_x}{^i}
-					for (unsigned int v = 0; v < overlapping_jobs; v++) { // v = {1,...,0{_x}{^i}}
+					for (unsigned int v = 0; v < overlapping_jobs; v++) { // v = {1,...,0{_x}{^i}} seconda sommatoria del constraint da v=1 a max-upper-bound del numero di job che overlappano Ji nel task x
 
-						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera una codifica del token blocking 
+						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera una codifica del token blocking  --> X{^T}{_x,y,v}
 						exp->add_var(var_token); // Aggiunge var_token (codificato) come espressione lineare per il problema da risolvere
 					
 					}
@@ -420,6 +423,8 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 				}
 
 			}
+
+			// RTOS: sopra aggiunge tutte le possibili X^T mentre sotto mette la disuguaglianza
 
 			/* sum of token variables can't exceed W_{i,g} * min(cluster_size, beta_{k,g}) */
 			add_inequality(
@@ -433,6 +438,8 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 
 }
 
+
+// RTOS: (II) CONSTRAINT
 void GIPPLinearProgram::set_global_token_blocking_constraint()
 {
 	/*
@@ -1221,6 +1228,8 @@ void GIPPLinearProgram::calculate_f_terms()
 
 }
 
+
+// RTOS: Calcola la W_{i,g}
 void GIPPLinearProgram::calculate_token_contentions()
 {
 	/*
@@ -1247,19 +1256,19 @@ void GIPPLinearProgram::calculate_token_contentions()
 		} else {
 
 			unsigned int phi = task_phis[(unsigned int)i][group_id];
-			int phi_alternate = 0;
+			int phi_alternate = 0; // RTOS: = phi^(i)
 			unsigned int task_id;
 			enumerate(taskset, task, task_id) {
 				
-				if (task_id == (unsigned int)i || task->get_cluster() != task_cluster) {
+				if (task_id == (unsigned int)i || task->get_cluster() != task_cluster) { // Non prendo lo stesso task_iesimo e soprattutto prendo tutti i task dello stesso cluster
 					continue;
 				}
 
-				phi_alternate += task_phis[task_id][group_id] * num_jobs_to_consider(*task);
+				phi_alternate += task_phis[task_id][group_id] * num_jobs_to_consider(*task); // sommatoria di tutti i task in cluster k del phi * teta
 			}
 
-			phi_alternate += 1;
-			phi_alternate -= cluster_size;
+			phi_alternate += 1; // + 1
+			phi_alternate -= cluster_size; // - c
 
 			/* this shouldn't ever be less than 0 */
 			assert(phi_alternate >= 0);
@@ -1267,7 +1276,21 @@ void GIPPLinearProgram::calculate_token_contentions()
 			if (phi < (unsigned int) phi_alternate) {
 				token_contention_max[group_id] = phi;
 			} else {
-				token_contention_max[group_id] += (unsigned int) phi_alternate;
+				token_contention_max[group_id] += (unsigned int) phi_alternate; // RTOS ERROR: perché += ? SOL: In teoria gli elementi sono inizializzati a zero nel vettore; vedi sotto
+				/*
+					#include <iostream>
+					#include <string>
+					#include <vector>
+					using namespace std;
+
+					int main()
+					{					
+						auto t = std::vector<unsigned int>(5);
+						std::cout << t[3] << endl;  // output = 0
+					}
+
+				*/
+
 			}
 		
 		}
