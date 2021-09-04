@@ -394,7 +394,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 				unsigned int cs_index;
 
 				// RTOS: cicla su ciascuna sezione critica del task Tx
-				enumerate(tx_cs, cs, cs_index) { // RTOS: Prima sommatoria del constraint 25
+				enumerate(tx_cs, cs, cs_index) { // RTOS: Seconda sommatoria del constraint 26
 
 					/* we continue without incrementing y as we only consider outermost
 					critical sections */
@@ -411,7 +411,7 @@ void GIPPLinearProgram::set_cluster_token_blocking_constraint()
 					} 
 
 					unsigned int overlapping_jobs = num_jobs_to_consider(*task); // = 0{_x}{^i}
-					for (unsigned int v = 0; v < overlapping_jobs; v++) { // v = {1,...,0{_x}{^i}} seconda sommatoria del constraint da v=1 a max-upper-bound del numero di job che overlappano Ji nel task x
+					for (unsigned int v = 0; v < overlapping_jobs; v++) { // v = {1,...,0{_x}{^i}} terza sommatoria del constraint 26 da v=1 a max-upper-bound del numero di job che overlappano Ji nel task x
 
 						var_t var_token = vars.lookup(x, y, v, BLOCKING_TOKEN); // RTOS: genera una codifica del token blocking  --> X{^T}{_x,y,v}
 						exp->add_var(var_token); // Aggiunge var_token (codificato) come espressione lineare per il problema da risolvere
@@ -508,6 +508,7 @@ void GIPPLinearProgram::set_global_token_blocking_constraint()
 
 }
 
+
 void GIPPLinearProgram::set_per_task_rsm_blocking_constraint()
 {
 	/*
@@ -585,6 +586,7 @@ void GIPPLinearProgram::set_per_task_rsm_blocking_constraint()
 
 }
 
+// RTOS: (IV) CONSTRAINT
 void GIPPLinearProgram::set_per_cluster_rsm_blocking_constraint()
 {
 	/*
@@ -667,7 +669,7 @@ void GIPPLinearProgram::set_per_cluster_rsm_blocking_constraint()
 					cluster_term -= 1;
 				}
 
-				if (beta_term > 0) {
+				if (beta_term > 0) { // RTOS: non va sotto lo zero --> Non è esplicito come vincolo nel paper sebbene il dominio delle variabili X sia [0,1]
 					beta_term -= 1;
 				}
 
@@ -701,7 +703,7 @@ unsigned int GIPPLinearProgram::num_resource_set_conflicts(std::set<unsigned int
 	unsigned int analyzed_task_id = i;
 	unsigned int num_conflicting = 0;
 
-	const CriticalSections& tx_cs = taskset_cs[analyzed_task_id].get_cs();
+	const CriticalSections& tx_cs = taskset_cs[analyzed_task_id].get_cs(); // RTOS: del task i-esimo
 
 	unsigned int cs_index;
 	enumerate(tx_cs, cs, cs_index) {
@@ -717,7 +719,7 @@ unsigned int GIPPLinearProgram::num_resource_set_conflicts(std::set<unsigned int
 		bool found_conflict = false;
 
 		unsigned int id_index;
-		enumerate(res_set, res_id, id_index) {
+		enumerate(res_set, res_id, id_index) { // res_set == s
 
 			std::set<unsigned int> greater_than_ids = resource_greater_than[(*res_id)];
 
@@ -747,7 +749,7 @@ unsigned int GIPPLinearProgram::num_resource_set_conflicts(std::set<unsigned int
 	return num_conflicting;
 
 }
-
+// RTOS: (V) CONSTRAINT ?
 void GIPPLinearProgram::set_per_task_conflicting_rsm_blocking_constraint()
 {
 
@@ -774,18 +776,23 @@ void GIPPLinearProgram::set_per_task_conflicting_rsm_blocking_constraint()
 				continue;
 			}
 
-			std::vector<unsigned int> cs_res_ids = taskset_cs[x].get_all_cs_resource_ids(cs_index);
+			std::vector<unsigned int> cs_res_ids = taskset_cs[x].get_all_cs_resource_ids(cs_index); // = S_x,y (cs_index ~ y)
 			std::set<unsigned int> set_res_ids;
 
 			for(auto t = cs_res_ids.begin(); t != cs_res_ids.end(); ++t) {
 				set_res_ids.insert(*t);
 			}
+			// Mette le cose in un set... 
 
 			overlapping_cs.insert(set_res_ids);
 
 		}
 
 	}
+
+	// RTOS: genera "S" senza riferimento a gruppi o a eccezioni del task i-esimo
+	// Qui però stiamo skippando tutto per arrivare a "per ogni g, per ogni s appartenenti a Si(g)"
+	// RTOS WARNING: Quindi si è generato tutti i possibili set di risorse ???
 
 	unsigned int s_index;
 	enumerate(overlapping_cs, s, s_index) {

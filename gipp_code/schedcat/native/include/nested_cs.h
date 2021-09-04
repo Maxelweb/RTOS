@@ -28,6 +28,15 @@ struct CriticalSection
 	                int outer_cs = NO_PARENT)
 		: resource_id(res_id), length(len), outer(outer_cs) {}
 
+	/*
+		outer most 1 ----------------- 	outermost2 -----
+	    ==== La =====				   	=== La ===	
+				====== Lb ===== 			
+							=== Lc === 
+
+
+	*/
+
 	// return the set of resources already held when this resource is requested
 	LockSet get_outer_locks(const CriticalSectionsOfTask &task) const;
 
@@ -100,6 +109,8 @@ public:
 				return true;
 			}
 		}
+
+		// RTOS: questa cosa è sbagliatissima (e lo ammette): sta riferendo outer come resource_id
 		
 		return false;
 	}
@@ -127,7 +138,7 @@ public:
 		{			
 
 			unsigned int outermost = get_outermost(i);
-			if (outermost == cs_index) {
+			if (outermost == cs_index) { // RTOS: controlla che il padre sia effettivamente cs_index di quella sezione critica che potrebbe essere annidata e ritorna tutte le risorse associate alle singole sezioni critiche
 				ret.push_back(cs[i].resource_id);
 			}
 
