@@ -381,7 +381,7 @@ public:
 	Interference& operator[](unsigned int idx)
 	{
 		assert( idx < size() );
-		return blocking[idx];
+		return blocking[idx]; // RTOS: viene usato per l'assegnamento causando side-effect e quindi popolando il vettore blocking del presente oggetto
 	}
 
 	void raise_request_span(unsigned idx, const Interference& val)

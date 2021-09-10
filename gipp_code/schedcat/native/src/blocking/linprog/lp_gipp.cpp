@@ -1786,7 +1786,9 @@ BlockingBounds* lp_gipp_bounds(
 				cluster_betas,
 				system_betas);
 
-		(*results)[i] = lp.solve();
+		(*results)[i] = lp.solve(); // lp.solve --> double (b_i)
+		// RTOS: popola il vettore blocking dove la lunghezza del vettore è il numero di task
+		// Salvo tutti i blocking per ogni task 
 	}
 
 	return results;

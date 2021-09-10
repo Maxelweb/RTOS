@@ -144,16 +144,18 @@ def apply_part_fmlp_bounds(all_tasks, preemptive=True):
 
 # S-oblivious bounds
 
+
+# RTOS: il risultato b_i viene aggiunto a ciascun task 
 def apply_suspension_oblivious(all_tasks, res):
     for i,t in enumerate(all_tasks):
         # s-oblivious <=> no suspension
         t.suspended = 0
         # might be zero
-        t.arrival_blocked = res.get_arrival_blocking(i)
+        t.arrival_blocked = res.get_arrival_blocking(i) # RTOS: questo sarà sempre 0 in realtà per GIPP
         # all blocking, including arrival blocking
-        t.blocked   = res.get_blocking_term(i)
+        t.blocked   = res.get_blocking_term(i) # RTOS: assegna b_i (con un giro lunghissimo, ma di fatto restituisce il bounds)
         # s-oblivious: charge it as execution cost
-        t.cost     += t.blocked
+        t.cost     += t.blocked 
 
 def apply_global_fmlp_sob_bounds(all_tasks):
     model = get_cpp_model(all_tasks)
@@ -461,7 +463,7 @@ def apply_gipp_bounds(all_tasks, num_cpus, procs_per_cluster, force_single_group
                                 nested_model,
                                 num_cpus, 
                                 procs_per_cluster,
-                                force_single_group) # RTOS questo valore è a TRUE (vedi edf_test_gipp_wrapper in ecrts20)
-    apply_suspension_oblivious(all_tasks, res)
+                                force_single_group) # RTOS questo valore è a TRUE ma solo per RNLP!!!!!!! (vedi edf_test_gipp_wrapper in ecrts20)
+    apply_suspension_oblivious(all_tasks, res) # Res è un array di blocking bounds
     return res
 
