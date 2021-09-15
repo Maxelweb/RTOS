@@ -1,5 +1,5 @@
 FROM python:2.7-buster
-COPY ./gipp_code /app
+# COPY ./gipp_code /app
 WORKDIR /app
 
 RUN apt-get update && apt-get install glpk-utils libglpk-dev swig g++ make -y

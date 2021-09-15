@@ -55,7 +55,7 @@ def produce_plot(source_dir, destination_dir, file_name, make_latex_caption=Fals
 
     ax.plot(x_axis, y_gipp, 'bD-', markevery=(5, 15), label="GIPP")
     ax.plot(x_axis, y_omip, 'gs-', markevery=(10, 15), label="OMIP")
-    ax.plot(x_axis, y_rnlp, 'ro-', markevery=(15, 15), label="CA-RNLP")
+    ax.plot(x_axis, y_rnlp, 'ro-', markevery=(15, 15), label="C-OMLP")
 
     ax.axis([5, 1000, 0, 1.0])
     _legend = ax.legend(loc='upper right')
@@ -104,7 +104,7 @@ def produce_plot(source_dir, destination_dir, file_name, make_latex_caption=Fals
 
     caption = ""
     if make_latex_caption:
-        caption += r"Schedulability under the GIPP, OMIP, and CA-RNLP for the labelled parameters."
+        caption += r"Schedulability under the GIPP, OMIP, and C-OMLP for the labelled parameters."
 
     plt.savefig(destination_dir + new_filename)
     plt.close(fig)

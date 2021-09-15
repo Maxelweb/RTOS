@@ -35,8 +35,13 @@ options = None
 def gipp_bounds(num_cpus, cluster_size, taskset, force_single_group=False):
     return locking.apply_gipp_bounds(taskset, num_cpus, cluster_size, force_single_group)
 
+# RTOS: EDIT FROM HERE ==========================
+
 def omip_bounds(num_cpus, cluster_size, taskset):
     return locking.apply_omip_bounds(taskset, num_cpus, cluster_size)
+
+def comlp_bounds(num_cpus, cluster_size, taskset):
+    return locking.apply_clustered_omlp_bounds(taskset, cluster_size)
 
 def pretend_no_blocking(num_cpus, cluster_size, taskset):
     pass
@@ -60,21 +65,24 @@ def edf_test_gipp_wrapper(num_cpus, cluster_size, tasksets):
     """
 
     ts_rnlp = tasksets[0].copy()
-    rnlp_bounds = partial(gipp_bounds, force_single_group=True)
+    ts_compl = taskset[1].copy()
+    # rnlp_bounds = partial(gipp_bounds, force_single_group=True)
 
     gipp_result = edf_test(num_cpus, cluster_size, gipp_bounds, tasksets[0])
     omip_result = edf_test(num_cpus, cluster_size, omip_bounds, tasksets[1])
-    rnlp_result = edf_test(num_cpus, cluster_size, rnlp_bounds, ts_rnlp)
+    comlp_result = edf_test(num_cpus, cluster_size, comlp_bounds, ts_comlp)
 
     # r = 0 indicates neither test succeeded
     r = '%d-%d-%d' % \
         (
             1 if gipp_result else 0,
             1 if omip_result else 0,
-            1 if rnlp_result else 0
+            1 if comlp_result else 0
         )
 
     return r
+
+# RTOS: END ==========================
 
 def edf_test(num_cpus, cluster_size, apply_bounds, taskset):
     """
@@ -157,7 +165,7 @@ def run_csl_config(conf):
     tests = [
         partial(edf_test_gipp_wrapper, conf.num_cpus, conf.cluster_size),
     ]
-    titles = ['GIPP-vs-OMIP-vs-RNLP/EDF']
+    titles = ['GIPP-vs-OMIP-vs-C/OMLP'] # RTOS: Edited also the title
 
     data = run_cls_tests(conf, tests)
     write_data(conf.output, data, titles)
