@@ -4,5 +4,5 @@ services:
   gipp_code: 
     container_name: gipp_code
     build: .
-    volumes:
-      - ./gipp_code:/app
+    #volumes:
+    #  - ./gipp_code:/app
