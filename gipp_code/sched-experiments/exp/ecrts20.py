@@ -65,7 +65,7 @@ def edf_test_gipp_wrapper(num_cpus, cluster_size, tasksets):
     """
 
     ts_rnlp = tasksets[0].copy()
-    ts_compl = taskset[1].copy()
+    ts_comlp = taskset[1].copy()
     # rnlp_bounds = partial(gipp_bounds, force_single_group=True)
 
     gipp_result = edf_test(num_cpus, cluster_size, gipp_bounds, tasksets[0])
