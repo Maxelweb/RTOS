@@ -5,6 +5,4 @@ services:
     container_name: gipp_code
     build: .
     volumes:
-      - repo:/app
-volumes:
-  repo: ./gipp_code
+      - ./gipp_code:/app
