@@ -1,1 +1,1 @@
-echo "completed: " && ls data_complete | wc -l && echo "remaining: "  && ls data_impossible | wc -l && echo "working: " && ls data_working | wc -l
+echo "completed: " && ls data_complete | wc -l && echo "impossible: "  && ls data_impossible | wc -l && echo "working: " && ls data_working | wc -l
