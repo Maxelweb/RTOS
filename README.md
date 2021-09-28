@@ -1,7 +1,7 @@
 
 ![unipd-logo](unipd-logo.png)
 
-# Analysis on "Nested, but Separate: Isolating Unrelated Critical Sections in Real-Time NestedLocking"
+# Analysis on "Nested, but Separate: Isolating Unrelated Critical Sections in Real-Time Nested Locking"
 
 Real time Kernel and Systems course project - University of Padova (Italy) 2020-21 (Prof. Tullio Vardanega)
 
